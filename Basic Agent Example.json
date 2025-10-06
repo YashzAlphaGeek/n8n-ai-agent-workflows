@@ -1,0 +1,138 @@
+{
+  "name": "Basic Agent Example",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        -96
+      ],
+      "id": "9ab03987-1b9a-486d-8615-008516986283",
+      "name": "Chat Input",
+      "webhookId": "a3866256-27e5-4c8e-92ae-2b39f12977ea",
+      "notesInFlow": true,
+      "notes": "This is how my agent starts a conversion"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -16,
+        -96
+      ],
+      "id": "6a4058cf-9f62-484c-80d1-29320f2cf8bb",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -144,
+        192
+      ],
+      "id": "7e2204e2-d97c-4483-b4db-e2c552ad6ae9",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "J6xpLX5jJmyPtHeR",
+          "name": "N8N Agent"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        32,
+        192
+      ],
+      "id": "9a81151b-47c3-4f56-a0e7-3675c1a5d64d",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        224,
+        192
+      ],
+      "id": "d34d2ee0-293b-43a0-a525-7b55a60f6548",
+      "name": "Calculator"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4c588c5a-b0e7-4f6b-a383-0ed8bf5e5d6c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb463d2af330167137a144dfc3d6ade17f27aa80def13f0aa941e87729a2df94"
+  },
+  "id": "zOt0DZRTX7oymL0X",
+  "tags": []
+}
