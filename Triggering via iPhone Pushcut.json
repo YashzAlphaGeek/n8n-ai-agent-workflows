@@ -1,0 +1,125 @@
+{
+  "name": "Triggering via iPhone Pushcut",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "34eea990-36c1-4fca-820a-a909948d0fae",
+      "name": "Chat Input",
+      "webhookId": "a3866256-27e5-4c8e-92ae-2b39f12977ea",
+      "notesInFlow": true,
+      "notes": "This is how my agent starts a conversion"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e4f9cc40-9c01-4f74-bf81-37d16414a849",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        80,
+        288
+      ],
+      "id": "9c2df6ce-1aed-45ab-bdf4-ec9da99e914d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "J6xpLX5jJmyPtHeR",
+          "name": "N8N Agent"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "notificationName": "My First Notification",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.pushcut",
+      "typeVersion": 1,
+      "position": [
+        560,
+        0
+      ],
+      "id": "fc5281fa-d845-44c4-8214-bf7a49837caf",
+      "name": "Send a notification",
+      "credentials": {
+        "pushcutApi": {
+          "id": "EQWhQBUbhkM",
+          "name": "Pushcut account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Chat Input": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3d773365-9a19-4987-a94d-b3977a24a820",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb463d2af330167137a144dfc3d6ade17f27aa80def13f0aa941e87729a2df94"
+  },
+  "id": "GK4dD3rqvKY5d0tI",
+  "tags": []
+}

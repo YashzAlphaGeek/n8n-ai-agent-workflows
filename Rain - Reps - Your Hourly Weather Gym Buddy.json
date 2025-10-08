@@ -1,0 +1,117 @@
+{
+  "name": "Rain & Reps: Your Hourly Weather Gym Buddy",
+  "nodes": [
+    {
+      "parameters": {},
+      "name": "Hourly Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [320, 144],
+      "id": "ae8b16e6-a37e-44e0-bbe0-ced77c0a34a8"
+    },
+    {
+      "parameters": {
+        "url": "https://ipinfo.io/json?token=d31e7e86101",
+        "options": {}
+      },
+      "name": "Get Location",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [528, 144],
+      "id": "4010c859-92d2-4f32-8117-62812b4c6fc3"
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            { "name": "latitude", "value": "={{$json.loc.split(',')[0]}}" },
+            { "name": "longitude", "value": "={{$json.loc.split(',')[1]}}" },
+            { "name": "timezone", "value": "={{$json.timezone}}" }
+          ]
+        },
+        "options": {}
+      },
+      "name": "Extract Lat/Lon & Timezone",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 1,
+      "position": [720, 144],
+      "id": "55e2e66d-bb94-444a-9831-9c01a989f6cd"
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/forecast",
+        "options": {},
+        "queryParametersUi": {
+          "parameter": [
+            { "name": "lat", "value": "={{$json[\"latitude\"]}}" },
+            { "name": "lon", "value": "={{$json[\"longitude\"]}}" },
+            { "name": "appid", "value": "d65edfe37fc54be3db0b4a36c24539b8" },
+            { "name": "units", "value": "metric" }
+          ]
+        }
+      },
+      "name": "Fetch Weather",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [928, 144],
+      "id": "7a3b21a8-1b73-43da-a70f-7a0ed157aa6a"
+    },
+    {
+      "parameters": {
+        "functionCode": "const data=$json;\nreturn [{forecast: data.list||[]}];"
+      },
+      "name": "Extract Forecast",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1136, 144],
+      "id": "8ea5c23b-3081-4455-9be4-085e9d3dfd98"
+    },
+    {
+      "parameters": {
+        "functionCode": "const timezone = $json.timezone || 'UTC';\nconst now = new Date();\nconst localTime = new Intl.DateTimeFormat('en-US', { timeZone: timezone, hour12: false, hour: '2-digit', minute: '2-digit' }).format(now);\nconst localHour = parseInt(localTime.split(':')[0]);\n\nlet staticData = this.getWorkflowStaticData('global');\nlet streak = staticData.gymStreak || 0;\nif (localHour >= 6 && localHour < 18) { streak += 1; staticData.gymStreak = streak; }\n\nconst forecast = $json.forecast || [];\nconst next12 = forecast.slice(0, 4);\n\nconst current = forecast[0] || {};\nconst currentMain = current.weather ? current.weather[0].main : 'N/A';\nconst currentTemp = current.main ? Math.round(current.main.temp) : 'N/A';\nconst weatherEmojiMap = { Clear:'☀️', Clouds:'☁️', Rain:'🌧', Drizzle:'🌦', Thunderstorm:'⛈', Snow:'❄️', Mist:'🌫', Fog:'🌫' };\nconst currentEmoji = weatherEmojiMap[currentMain] || '🌤';\n\nconst rainProbabilities = next12.map(f => f.pop != null ? Math.round(f.pop*100) : 0);\nconst rainEmojis = rainProbabilities.map(p => { if(p===0) return '☀️'; if(p<=30) return '🌤'; if(p<=60) return '⛅️'; if(p<=80) return '🌧'; return '⛈'; });\nconst forecastText = next12.map((f,i) => { const timeLabel = new Date(f.dt*1000).toLocaleTimeString('en-US',{timeZone: timezone,hour:'2-digit',minute:'2-digit'}); return `${timeLabel} ${rainEmojis[i]} ${rainProbabilities[i]}%`; }).join('  |  ');\n\nlet gymText = streak===0 ? '🏁 Let\\'s get started with your first gym day!' : `🏋️‍♂️ You\\'re on a ${streak}-day gym streak!`;\nlet greeting = localHour<12?'Good morning!':localHour<18?'Good afternoon!':'Good evening!';\n\nlet text = `${greeting} | ${localTime}\\n\\nCurrent: ${currentEmoji} ${currentMain}, ${currentTemp}°C\\n\\nNext 12h:\\n${forecastText}\\n\\n${gymText}`;\n\nreturn [{ sendNotification:true, text }];"
+      },
+      "name": "Generate Message",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [1328, 144],
+      "id": "e45a5409-a693-4d22-886d-d017d535455b"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [{ "value1": "={{$json.sendNotification}}", "value2": true }]
+        }
+      },
+      "name": "IF Send Notification",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [1536, 144],
+      "id": "b34b0088-3ca3-4758-9bfd-0e018cdbacaf"
+    },
+    {
+      "parameters": {
+        "notificationName": "Hourly Weather & Gym",
+        "additionalFields": { "text": "={{$json.text}}" }
+      },
+      "name": "Send Pushcut Alert",
+      "type": "n8n-nodes-base.pushcut",
+      "typeVersion": 1,
+      "position": [1728, 144],
+      "id": "e316de08-1703-47ea-9917-ff355b32c60c",
+      "credentials": {
+        "pushcutApi": { "id": "EQWBuoUbhkM", "name": "Pushcut account" }
+      }
+    }
+  ],
+  "connections": {
+    "Hourly Trigger": { "main": [[{ "node": "Get Location", "type": "main", "index": 0 }]] },
+    "Get Location": { "main": [[{ "node": "Extract Lat/Lon & Timezone", "type": "main", "index": 0 }]] },
+    "Extract Lat/Lon & Timezone": { "main": [[{ "node": "Fetch Weather", "type": "main", "index": 0 }]] },
+    "Fetch Weather": { "main": [[{ "node": "Extract Forecast", "type": "main", "index": 0 }]] },
+    "Extract Forecast": { "main": [[{ "node": "Generate Message", "type": "main", "index": 0 }]] },
+    "Generate Message": { "main": [[{ "node": "IF Send Notification", "type": "main", "index": 0 }]] },
+    "IF Send Notification": { "main": [[{ "node": "Send Pushcut Alert", "type": "main", "index": 0 }]] }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" }
+}
