@@ -1,0 +1,148 @@
+{
+  "name": "D-ID Ellen Open Chat Workflow Corrected",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1248,
+        192
+      ],
+      "id": "7fdfa68e-ea6e-41a0-8854-b93a5e8773f4",
+      "name": "Trigger Talk"
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "requestMethod": "POST",
+        "url": "https://api.d-id.com/talks",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "{\n  \"source_url\": \"https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png\",\n  \"script\": {\n    \"type\": \"text\",\n    \"input\": \"Hello world!\"\n  }\n}\n"
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1488,
+        192
+      ],
+      "id": "b3620653-4489-42a0-af58-e3ed26cde0ee",
+      "name": "Create Talk",
+      "alwaysOutputData": true,
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "nHtVz3JzGLSlDuif",
+          "name": "Unnamed credential 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "url": "https://api.d-id.com/talks",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        192
+      ],
+      "id": "b36e61c4-947f-440c-a318-d2b2a029af78",
+      "name": "Get Talk Status",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "nHtVz3JzGLSlDuif",
+          "name": "Unnamed credential 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "if($json.status === 'done') {\n  return { json: { video_url: $json.result_url } };\n} else {\n  return { json: { status: $json.status } };\n}"
+      },
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        192
+      ],
+      "id": "60cd0b88-04ef-4594-8fa7-b7c3ff505f64",
+      "name": "Format Video Response"
+    },
+    {
+      "parameters": {
+        "amount": 10
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1,
+      "position": [
+        2016,
+        416
+      ],
+      "id": "671f537d-e0ff-4d8b-8096-021e5bfc1d7c",
+      "name": "Wait Before Retry",
+      "webhookId": "e84540b4-68fb-4e67-b74c-95cbaffe3151"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Trigger Talk": {
+      "main": [
+        [
+          {
+            "node": "Create Talk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Talk": {
+      "main": [
+        [
+          {
+            "node": "Get Talk Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Talk Status": {
+      "main": [
+        [
+          {
+            "node": "Format Video Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait Before Retry": {
+      "main": [
+        [
+          {
+            "node": "Get Talk Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "10d81e3f-5c79-4c9e-a74e-618f4b1252ec",
+  "meta": {
+    "instanceId": "eb463d2af330167137a144dfc3d6ade17f27aa80def13f0aa941e87729a2df94"
+  },
+  "id": "PFcU2sl3CGeXQYWT",
+  "tags": []
+}
